@@ -1,16 +1,240 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useMemo } from 'react';
+import { useTrades } from '@/hooks/useTrades';
+import StatCard from '@/components/StatCard';
+import PerformanceChart from '@/components/PerformanceChart';
+import WinrateChart from '@/components/WinrateChart';
+import TradeForm from '@/components/TradeForm';
+import TradeRow from '@/components/TradeRow';
+import { Trade } from '@/types/trade';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Plus, BarChart3, BookOpen, TrendingUp, Target, Shield,
+  Activity, Award, AlertTriangle, Search
+} from 'lucide-react';
+import { SETUPS, ACTIFS } from '@/types/trade';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const { trades, stats, addTrade, updateTrade, deleteTrade } = useTrades();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editTrade, setEditTrade] = useState<Trade | undefined>();
+  const [filterActif, setFilterActif] = useState('all');
+  const [filterSetup, setFilterSetup] = useState('all');
+  const [searchDate, setSearchDate] = useState('');
+
+  const filteredTrades = useMemo(() => {
+    return trades
+      .filter(t => filterActif === 'all' || t.actif === filterActif)
+      .filter(t => filterSetup === 'all' || t.setup === filterSetup)
+      .filter(t => !searchDate || t.date.includes(searchDate))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [trades, filterActif, filterSetup, searchDate]);
+
+  const weekTrades = useMemo(() => {
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return trades.filter(t => new Date(t.date) >= weekAgo);
+  }, [trades]);
+
+  const handleEdit = (trade: Trade) => {
+    setEditTrade(trade);
+    setFormOpen(true);
+  };
+
+  const handleSubmit = (data: Omit<Trade, 'id'>) => {
+    if (editTrade) {
+      updateTrade(editTrade.id, data);
+      setEditTrade(undefined);
+    } else {
+      addTrade(data);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border sticky top-0 z-50 bg-background/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <h1 className="text-xl font-bold">
+              <span className="text-gold">Orakel</span> Trading Journal
+            </h1>
+          </div>
+          <Button onClick={() => { setEditTrade(undefined); setFormOpen(true); }} className="gradient-gold text-primary-foreground font-semibold gap-2">
+            <Plus className="w-4 h-4" /> Nouveau Trade
+          </Button>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList className="bg-secondary border border-border">
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-card data-[state=active]:text-gold gap-2">
+              <BarChart3 className="w-4 h-4" /> Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="journal" className="data-[state=active]:bg-card data-[state=active]:text-gold gap-2">
+              <BookOpen className="w-4 h-4" /> Journal
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="data-[state=active]:bg-card data-[state=active]:text-gold gap-2">
+              <Activity className="w-4 h-4" /> Statistiques
+            </TabsTrigger>
+          </TabsList>
+
+          {/* DASHBOARD */}
+          <TabsContent value="dashboard" className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard
+                title="Trades cette semaine"
+                value={weekTrades.length}
+                icon={<Activity className="w-5 h-5" />}
+              />
+              <StatCard
+                title="Winrate"
+                value={`${stats.winrate.toFixed(1)}%`}
+                icon={<Target className="w-5 h-5" />}
+                trend={stats.winrate >= 50 ? 'up' : stats.winrate > 0 ? 'down' : 'neutral'}
+              />
+              <StatCard
+                title="Profit Net"
+                value={`${stats.profitNetR >= 0 ? '+' : ''}${stats.profitNetR.toFixed(1)}R`}
+                icon={<TrendingUp className="w-5 h-5" />}
+                trend={stats.profitNetR >= 0 ? 'up' : 'down'}
+              />
+              <StatCard
+                title="Discipline"
+                value={`${stats.tauxDiscipline.toFixed(0)}%`}
+                icon={<Shield className="w-5 h-5" />}
+                trend={stats.tauxDiscipline >= 80 ? 'up' : stats.tauxDiscipline > 0 ? 'down' : 'neutral'}
+              />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Courbe de Performance (R)</h3>
+                <PerformanceChart trades={trades} />
+              </div>
+              <div className="rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Répartition Gains/Pertes</h3>
+                <WinrateChart trades={trades} />
+                <div className="flex justify-center gap-6 mt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-profit" />
+                    <span className="text-xs text-muted-foreground">Gains ({stats.tradesGagnants})</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-loss" />
+                    <span className="text-xs text-muted-foreground">Pertes ({stats.tradesPerdants})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent trades */}
+            <div className="rounded-lg border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-muted-foreground mb-4">Trades Récents</h3>
+              <div className="space-y-2">
+                {trades.slice(0, 5).length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    Aucun trade enregistré. Cliquez sur "Nouveau Trade" pour commencer.
+                  </p>
+                ) : (
+                  trades
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .slice(0, 5)
+                    .map(t => <TradeRow key={t.id} trade={t} onEdit={handleEdit} onDelete={deleteTrade} />)
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* JOURNAL */}
+          <TabsContent value="journal" className="space-y-4">
+            <div className="flex flex-wrap gap-3">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="date"
+                  value={searchDate}
+                  onChange={e => setSearchDate(e.target.value)}
+                  className="pl-10 bg-secondary border-border"
+                  placeholder="Filtrer par date"
+                />
+              </div>
+              <Select value={filterActif} onValueChange={setFilterActif}>
+                <SelectTrigger className="w-[150px] bg-secondary border-border"><SelectValue placeholder="Actif" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les actifs</SelectItem>
+                  {ACTIFS.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={filterSetup} onValueChange={setFilterSetup}>
+                <SelectTrigger className="w-[150px] bg-secondary border-border"><SelectValue placeholder="Setup" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les setups</SelectItem>
+                  {SETUPS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              {filteredTrades.length === 0 ? (
+                <div className="text-center py-16">
+                  <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Aucun trade trouvé</p>
+                </div>
+              ) : (
+                filteredTrades.map(t => (
+                  <TradeRow key={t.id} trade={t} onEdit={handleEdit} onDelete={deleteTrade} />
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          {/* STATS */}
+          <TabsContent value="stats" className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <StatCard title="Total Trades" value={stats.totalTrades} icon={<Activity className="w-5 h-5" />} />
+              <StatCard title="Trades Gagnants" value={stats.tradesGagnants} icon={<TrendingUp className="w-5 h-5" />} trend="up" />
+              <StatCard title="Trades Perdants" value={stats.tradesPerdants} icon={<AlertTriangle className="w-5 h-5" />} trend="down" />
+              <StatCard title="Winrate" value={`${stats.winrate.toFixed(1)}%`} icon={<Target className="w-5 h-5" />} trend={stats.winrate >= 50 ? 'up' : 'down'} />
+              <StatCard title="Profit Total" value={`+${stats.profitTotalR.toFixed(1)}R`} icon={<TrendingUp className="w-5 h-5" />} trend="up" />
+              <StatCard title="Perte Totale" value={`-${stats.perteTotaleR.toFixed(1)}R`} icon={<AlertTriangle className="w-5 h-5" />} trend="down" />
+              <StatCard title="Profit Net" value={`${stats.profitNetR >= 0 ? '+' : ''}${stats.profitNetR.toFixed(1)}R`} icon={<Award className="w-5 h-5" />} trend={stats.profitNetR >= 0 ? 'up' : 'down'} />
+              <StatCard title="Moyenne R/Trade" value={`${stats.moyenneR.toFixed(2)}R`} icon={<BarChart3 className="w-5 h-5" />} />
+              <StatCard title="Discipline" value={`${stats.tauxDiscipline.toFixed(0)}%`} icon={<Shield className="w-5 h-5" />} trend={stats.tauxDiscipline >= 80 ? 'up' : 'down'} />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="rounded-lg border border-border bg-card p-5">
+                <p className="text-xs text-muted-foreground mb-1">Setup le plus rentable</p>
+                <p className="text-lg font-bold text-profit">{stats.setupPlusRentable}</p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-5">
+                <p className="text-xs text-muted-foreground mb-1">Setup le moins rentable</p>
+                <p className="text-lg font-bold text-loss">{stats.setupMoinsRentable}</p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-5">
+                <p className="text-xs text-muted-foreground mb-1">Actif le plus rentable</p>
+                <p className="text-lg font-bold text-gold">{stats.actifPlusRentable}</p>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      <TradeForm
+        open={formOpen}
+        onOpenChange={(open) => { setFormOpen(open); if (!open) setEditTrade(undefined); }}
+        onSubmit={handleSubmit}
+        initialData={editTrade}
+      />
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
