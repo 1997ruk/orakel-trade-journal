@@ -23,7 +23,7 @@ export interface Trade {
   emotion: Emotion;
   noteAvant: string;
   noteApres: string;
-  imageTrade?: string;
+  imageUrl?: string | null;
 }
 
 export interface TradeStats {
