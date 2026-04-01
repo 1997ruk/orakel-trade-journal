@@ -1,6 +1,6 @@
 import { Trade } from '@/types/trade';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, TrendingUp, TrendingDown, CheckCircle, XCircle } from 'lucide-react';
+import { Trash2, Edit, TrendingUp, TrendingDown, CheckCircle, XCircle, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TradeRowProps {
@@ -51,9 +51,12 @@ const TradeRow = ({ trade, onEdit, onDelete }: TradeRowProps) => {
             : <XCircle className="w-4 h-4 text-loss" />
           }
         </div>
-        <div className="hidden md:block">
-          <p className="text-xs text-muted-foreground">Émotion</p>
-          <p className="text-xs">{trade.emotion}</p>
+        <div className="hidden md:flex items-center gap-2">
+          <div>
+            <p className="text-xs text-muted-foreground">Émotion</p>
+            <p className="text-xs">{trade.emotion}</p>
+          </div>
+          {trade.imageUrl && <ImageIcon className="w-4 h-4 text-gold" />}
         </div>
       </div>
 

@@ -7,6 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { ImagePlus, X } from 'lucide-react';
 
 interface TradeFormProps {
   open: boolean;
@@ -31,20 +34,45 @@ const defaultForm = {
   emotion: 'Discipline' as Emotion,
   noteAvant: '',
   noteApres: '',
+  imageUrl: null as string | null,
 };
 
 const TradeForm = ({ open, onOpenChange, onSubmit, initialData }: TradeFormProps) => {
-  const [form, setForm] = useState(initialData || defaultForm);
+  const [form, setForm] = useState(initialData ? { ...initialData } : { ...defaultForm });
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.imageUrl || null);
+  const { user } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(form);
-    setForm(defaultForm);
+    setForm({ ...defaultForm });
+    setPreviewUrl(null);
     onOpenChange(false);
   };
 
   const update = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('trade-screenshots').upload(path, file);
+    if (!error) {
+      const { data: { publicUrl } } = supabase.storage.from('trade-screenshots').getPublicUrl(path);
+      update('imageUrl', path);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+    setUploading(false);
+  };
+
+  const removeImage = () => {
+    update('imageUrl', null);
+    setPreviewUrl(null);
   };
 
   return (
@@ -137,6 +165,29 @@ const TradeForm = ({ open, onOpenChange, onSubmit, initialData }: TradeFormProps
           <div className="flex items-center gap-3">
             <Switch checked={form.tradeRespecte} onCheckedChange={v => update('tradeRespecte', v)} />
             <Label>Trade respecté (plan suivi)</Label>
+          </div>
+
+          {/* Image upload */}
+          <div>
+            <Label>Capture d'écran</Label>
+            <div className="mt-1">
+              {previewUrl ? (
+                <div className="relative inline-block">
+                  <img src={previewUrl} alt="Trade screenshot" className="max-h-32 rounded-lg border border-border" />
+                  <button type="button" onClick={removeImage} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-dashed border-border hover:border-gold transition-colors">
+                  <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {uploading ? 'Upload en cours...' : 'Ajouter une capture'}
+                  </span>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
+                </label>
+              )}
+            </div>
           </div>
 
           <div>
