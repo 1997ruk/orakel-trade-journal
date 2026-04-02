@@ -46,7 +46,7 @@ export function exportJournalPdf(trades: Trade[], stats: TradeStats) {
     head: [['Métrique', 'Valeur']],
     body: statItems,
     theme: 'grid',
-    headStyles: { fillColor: gold as unknown as number[], textColor: dark as unknown as number[], fontStyle: 'bold', fontSize: 9 },
+    headStyles: { fillColor: [...gold] as [number, number, number], textColor: [...dark] as [number, number, number], fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, textColor: [220, 220, 220] },
     alternateRowStyles: { fillColor: [35, 35, 40] },
     styles: { fillColor: [28, 28, 32], lineColor: [60, 60, 65], lineWidth: 0.3, cellPadding: 3 },
