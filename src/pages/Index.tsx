@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus, BarChart3, BookOpen, TrendingUp, Target, Shield,
-  Activity, Award, AlertTriangle, Search, LogOut
+  Activity, Award, AlertTriangle, Search, LogOut, FileDown
 } from 'lucide-react';
+import { exportJournalPdf } from '@/utils/exportPdf';
 import { SETUPS, ACTIFS } from '@/types/trade';
 
 const Index = () => {
