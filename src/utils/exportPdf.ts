@@ -80,7 +80,7 @@ export function exportJournalPdf(trades: Trade[], stats: TradeStats) {
       (t.noteApres || '-').substring(0, 40),
     ]),
     theme: 'grid',
-    headStyles: { fillColor: gold as unknown as number[], textColor: dark as unknown as number[], fontStyle: 'bold', fontSize: 8 },
+    headStyles: { fillColor: [...gold] as [number, number, number], textColor: [...dark] as [number, number, number], fontStyle: 'bold', fontSize: 8 },
     bodyStyles: { fontSize: 7.5, textColor: [210, 210, 210] },
     alternateRowStyles: { fillColor: [35, 35, 40] },
     styles: { fillColor: [28, 28, 32], lineColor: [60, 60, 65], lineWidth: 0.3, cellPadding: 2, overflow: 'linebreak' },
