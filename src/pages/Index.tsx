@@ -76,6 +76,9 @@ const Index = () => {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => exportJournalPdf(trades, stats)} className="gap-2 border-border text-muted-foreground hover:text-foreground">
+              <FileDown className="w-4 h-4" /> Export PDF
+            </Button>
             <Button onClick={() => { setEditTrade(undefined); setFormOpen(true); }} className="gradient-gold text-primary-foreground font-semibold gap-2">
               <Plus className="w-4 h-4" /> Nouveau Trade
             </Button>
