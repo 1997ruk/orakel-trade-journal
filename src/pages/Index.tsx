@@ -16,16 +16,25 @@ import {
   Activity, Award, AlertTriangle, Search, LogOut, FileDown
 } from 'lucide-react';
 import { exportJournalPdf } from '@/utils/exportPdf';
+import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
 import { SETUPS, ACTIFS } from '@/types/trade';
+
+const PERIOD_LABELS: Record<Period, string> = {
+  all: 'Tout',
+  week: 'Semaine',
+  month: 'Mois',
+  quarter: 'Trimestre',
+};
 
 const Index = () => {
   const { trades, stats, loading, addTrade, updateTrade, deleteTrade } = useTrades();
-  const { signOut, user } = useAuth();
+  const { signOut } = useAuth();
   const [formOpen, setFormOpen] = useState(false);
   const [editTrade, setEditTrade] = useState<Trade | undefined>();
   const [filterActif, setFilterActif] = useState('all');
   const [filterSetup, setFilterSetup] = useState('all');
   const [searchDate, setSearchDate] = useState('');
+  const [dashboardPeriod, setDashboardPeriod] = useState<Period>('all');
 
   const filteredTrades = useMemo(() => {
     return trades
@@ -35,11 +44,8 @@ const Index = () => {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [trades, filterActif, filterSetup, searchDate]);
 
-  const weekTrades = useMemo(() => {
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    return trades.filter(t => new Date(t.date) >= weekAgo);
-  }, [trades]);
+  const periodTrades = useMemo(() => filterByPeriod(trades, dashboardPeriod), [trades, dashboardPeriod]);
+  const periodStats = useMemo(() => computeStats(periodTrades), [periodTrades]);
 
   const handleEdit = (trade: Trade) => {
     setEditTrade(trade);
@@ -105,29 +111,44 @@ const Index = () => {
 
           {/* DASHBOARD */}
           <TabsContent value="dashboard" className="space-y-6">
+            {/* Period filter */}
+            <div className="flex items-center gap-2">
+              {(Object.keys(PERIOD_LABELS) as Period[]).map(p => (
+                <Button
+                  key={p}
+                  variant={dashboardPeriod === p ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDashboardPeriod(p)}
+                  className={dashboardPeriod === p ? 'gradient-gold text-primary-foreground' : 'border-border text-muted-foreground hover:text-foreground'}
+                >
+                  {PERIOD_LABELS[p]}
+                </Button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard title="Trades cette semaine" value={weekTrades.length} icon={<Activity className="w-5 h-5" />} />
-              <StatCard title="Winrate" value={`${stats.winrate.toFixed(1)}%`} icon={<Target className="w-5 h-5" />} trend={stats.winrate >= 50 ? 'up' : stats.winrate > 0 ? 'down' : 'neutral'} />
-              <StatCard title="Profit Net" value={`${stats.profitNetR >= 0 ? '+' : ''}${stats.profitNetR.toFixed(1)}R`} icon={<TrendingUp className="w-5 h-5" />} trend={stats.profitNetR >= 0 ? 'up' : 'down'} />
-              <StatCard title="Discipline" value={`${stats.tauxDiscipline.toFixed(0)}%`} icon={<Shield className="w-5 h-5" />} trend={stats.tauxDiscipline >= 80 ? 'up' : stats.tauxDiscipline > 0 ? 'down' : 'neutral'} />
+              <StatCard title="Trades" value={periodStats.totalTrades} icon={<Activity className="w-5 h-5" />} />
+              <StatCard title="Winrate" value={`${periodStats.winrate.toFixed(1)}%`} icon={<Target className="w-5 h-5" />} trend={periodStats.winrate >= 50 ? 'up' : periodStats.winrate > 0 ? 'down' : 'neutral'} />
+              <StatCard title="Profit Net" value={`${periodStats.profitNetR >= 0 ? '+' : ''}${periodStats.profitNetR.toFixed(1)}R`} icon={<TrendingUp className="w-5 h-5" />} trend={periodStats.profitNetR >= 0 ? 'up' : 'down'} />
+              <StatCard title="Discipline" value={`${periodStats.tauxDiscipline.toFixed(0)}%`} icon={<Shield className="w-5 h-5" />} trend={periodStats.tauxDiscipline >= 80 ? 'up' : periodStats.tauxDiscipline > 0 ? 'down' : 'neutral'} />
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
               <div className="md:col-span-2 rounded-lg border border-border bg-card p-5">
                 <h3 className="text-sm font-semibold text-muted-foreground mb-4">Courbe de Performance (R)</h3>
-                <PerformanceChart trades={trades} />
+                <PerformanceChart trades={periodTrades} />
               </div>
               <div className="rounded-lg border border-border bg-card p-5">
                 <h3 className="text-sm font-semibold text-muted-foreground mb-4">Répartition Gains/Pertes</h3>
-                <WinrateChart trades={trades} />
+                <WinrateChart trades={periodTrades} />
                 <div className="flex justify-center gap-6 mt-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-profit" />
-                    <span className="text-xs text-muted-foreground">Gains ({stats.tradesGagnants})</span>
+                    <span className="text-xs text-muted-foreground">Gains ({periodStats.tradesGagnants})</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-loss" />
-                    <span className="text-xs text-muted-foreground">Pertes ({stats.tradesPerdants})</span>
+                    <span className="text-xs text-muted-foreground">Pertes ({periodStats.tradesPerdants})</span>
                   </div>
                 </div>
               </div>
@@ -136,10 +157,10 @@ const Index = () => {
             <div className="rounded-lg border border-border bg-card p-5">
               <h3 className="text-sm font-semibold text-muted-foreground mb-4">Trades Récents</h3>
               <div className="space-y-2">
-                {trades.slice(0, 5).length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">Aucun trade enregistré. Cliquez sur "Nouveau Trade" pour commencer.</p>
+                {periodTrades.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">Aucun trade sur cette période.</p>
                 ) : (
-                  trades.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5).map(t => (
+                  [...periodTrades].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5).map(t => (
                     <TradeRow key={t.id} trade={t} onEdit={handleEdit} onDelete={deleteTrade} />
                   ))
                 )}
