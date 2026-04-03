@@ -18,7 +18,6 @@ import {
 import { exportJournalPdf } from '@/utils/exportPdf';
 import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
 import { SETUPS, ACTIFS } from '@/types/trade';
-import TradeCalendar from '@/components/TradeCalendar';
 
 const PERIOD_LABELS: Record<Period, string> = {
   all: 'Tout',
@@ -153,11 +152,6 @@ const Index = () => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="rounded-lg border border-border bg-card p-5">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4">Calendrier de Trading</h3>
-              <TradeCalendar trades={periodTrades} />
             </div>
 
             <div className="rounded-lg border border-border bg-card p-5">
