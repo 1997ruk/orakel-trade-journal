@@ -167,6 +167,11 @@ const Index = () => {
                   ))
                 )}
               </div>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Calendrier</h3>
+                <TradeCalendar trades={periodTrades} />
+              </div>
             </div>
           </TabsContent>
 
