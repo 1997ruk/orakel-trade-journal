@@ -40,9 +40,10 @@ const defaultForm = {
 };
 
 const TradeForm = ({ open, onOpenChange, onSubmit, initialData }: TradeFormProps) => {
-  const [form, setForm] = useState(initialData ? { ...initialData } : { ...defaultForm });
+  const [form, setForm] = useState(initialData ? { ...initialData, tags: initialData.tags || [] } : { ...defaultForm });
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.imageUrl || null);
+  const [tagInput, setTagInput] = useState('');
   const { user } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
