@@ -193,6 +193,52 @@ const TradeForm = ({ open, onOpenChange, onSubmit, initialData }: TradeFormProps
             </div>
           </div>
 
+          {/* Tags */}
+          <div>
+            <Label>Tags personnalisés</Label>
+            <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
+              {form.tags.map((tag, i) => (
+                <Badge key={i} variant="secondary" className="gap-1 text-xs">
+                  {tag}
+                  <button type="button" onClick={() => update('tags', form.tags.filter((_, j) => j !== i))} className="hover:text-destructive">
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && tagInput.trim()) {
+                    e.preventDefault();
+                    if (!form.tags.includes(tagInput.trim())) {
+                      update('tags', [...form.tags, tagInput.trim()]);
+                    }
+                    setTagInput('');
+                  }
+                }}
+                placeholder="Ex: london session, trend..."
+                className="bg-secondary border-border flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  if (tagInput.trim() && !form.tags.includes(tagInput.trim())) {
+                    update('tags', [...form.tags, tagInput.trim()]);
+                    setTagInput('');
+                  }
+                }}
+                className="border-border"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
           <div>
             <Label>Note avant trade</Label>
             <Textarea value={form.noteAvant} onChange={e => update('noteAvant', e.target.value)} placeholder="Analyse, raison d'entrée..." className="bg-secondary border-border" />
