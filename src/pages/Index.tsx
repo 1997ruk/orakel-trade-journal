@@ -18,6 +18,7 @@ import {
 import { exportJournalPdf } from '@/utils/exportPdf';
 import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
 import { SETUPS, ACTIFS } from '@/types/trade';
+import TradeCalendar from '@/components/TradeCalendar';
 
 const PERIOD_LABELS: Record<Period, string> = {
   all: 'Tout',
