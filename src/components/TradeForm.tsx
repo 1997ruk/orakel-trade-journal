@@ -36,6 +36,7 @@ const defaultForm = {
   noteAvant: '',
   noteApres: '',
   imageUrl: null as string | null,
+  tags: [] as string[],
 };
 
 const TradeForm = ({ open, onOpenChange, onSubmit, initialData }: TradeFormProps) => {
