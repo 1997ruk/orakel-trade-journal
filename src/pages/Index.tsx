@@ -16,6 +16,7 @@ import {
   Activity, Award, AlertTriangle, Search, LogOut, FileDown
 } from 'lucide-react';
 import { exportJournalPdf } from '@/utils/exportPdf';
+import TradeCalendar from '@/components/TradeCalendar';
 import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
 import { SETUPS, ACTIFS } from '@/types/trade';
 
@@ -154,8 +155,9 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-border bg-card p-5">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4">Trades Récents</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Trades Récents</h3>
               <div className="space-y-2">
                 {periodTrades.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">Aucun trade sur cette période.</p>
@@ -164,6 +166,11 @@ const Index = () => {
                     <TradeRow key={t.id} trade={t} onEdit={handleEdit} onDelete={deleteTrade} />
                   ))
                 )}
+              </div>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Calendrier</h3>
+                <TradeCalendar trades={periodTrades} />
               </div>
             </div>
           </TabsContent>
