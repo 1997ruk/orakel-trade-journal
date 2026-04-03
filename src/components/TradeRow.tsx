@@ -1,5 +1,6 @@
 import { Trade } from '@/types/trade';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, TrendingUp, TrendingDown, CheckCircle, XCircle, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -51,12 +52,15 @@ const TradeRow = ({ trade, onEdit, onDelete }: TradeRowProps) => {
             : <XCircle className="w-4 h-4 text-loss" />
           }
         </div>
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2 flex-wrap">
           <div>
             <p className="text-xs text-muted-foreground">Émotion</p>
             <p className="text-xs">{trade.emotion}</p>
           </div>
           {trade.imageUrl && <ImageIcon className="w-4 h-4 text-gold" />}
+          {trade.tags?.length > 0 && trade.tags.slice(0, 2).map((tag, i) => (
+            <Badge key={i} variant="outline" className="text-[10px] px-1.5 py-0 border-gold/30 text-gold">{tag}</Badge>
+          ))}
         </div>
       </div>
 

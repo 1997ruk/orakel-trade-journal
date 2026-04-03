@@ -36,6 +36,7 @@ export function useTrades() {
         noteAvant: t.note_avant || '',
         noteApres: t.note_apres || '',
         imageUrl: t.image_url,
+        tags: (t as any).tags || [],
       })));
     }
     setLoading(false);
@@ -63,7 +64,8 @@ export function useTrades() {
       note_avant: trade.noteAvant,
       note_apres: trade.noteApres,
       image_url: trade.imageUrl || null,
-    });
+      tags: trade.tags || [],
+    } as any);
     if (!error) await fetchTrades();
   }, [user, fetchTrades]);
 
@@ -86,6 +88,7 @@ export function useTrades() {
     if (updates.noteAvant !== undefined) dbUpdates.note_avant = updates.noteAvant;
     if (updates.noteApres !== undefined) dbUpdates.note_apres = updates.noteApres;
     if (updates.imageUrl !== undefined) dbUpdates.image_url = updates.imageUrl;
+    if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
 
     const { error } = await supabase.from('trades').update(dbUpdates).eq('id', id).eq('user_id', user.id);
     if (!error) await fetchTrades();

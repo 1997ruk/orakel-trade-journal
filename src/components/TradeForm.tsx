@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { ImagePlus, X } from 'lucide-react';
+import { ImagePlus, X, Plus } from 'lucide-react';
 
 interface TradeFormProps {
   open: boolean;
@@ -35,12 +36,14 @@ const defaultForm = {
   noteAvant: '',
   noteApres: '',
   imageUrl: null as string | null,
+  tags: [] as string[],
 };
 
 const TradeForm = ({ open, onOpenChange, onSubmit, initialData }: TradeFormProps) => {
-  const [form, setForm] = useState(initialData ? { ...initialData } : { ...defaultForm });
+  const [form, setForm] = useState(initialData ? { ...initialData, tags: initialData.tags || [] } : { ...defaultForm });
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialData?.imageUrl || null);
+  const [tagInput, setTagInput] = useState('');
   const { user } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -187,6 +190,52 @@ const TradeForm = ({ open, onOpenChange, onSubmit, initialData }: TradeFormProps
                   <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
                 </label>
               )}
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div>
+            <Label>Tags personnalisés</Label>
+            <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
+              {form.tags.map((tag, i) => (
+                <Badge key={i} variant="secondary" className="gap-1 text-xs">
+                  {tag}
+                  <button type="button" onClick={() => update('tags', form.tags.filter((_, j) => j !== i))} className="hover:text-destructive">
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && tagInput.trim()) {
+                    e.preventDefault();
+                    if (!form.tags.includes(tagInput.trim())) {
+                      update('tags', [...form.tags, tagInput.trim()]);
+                    }
+                    setTagInput('');
+                  }
+                }}
+                placeholder="Ex: london session, trend..."
+                className="bg-secondary border-border flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  if (tagInput.trim() && !form.tags.includes(tagInput.trim())) {
+                    update('tags', [...form.tags, tagInput.trim()]);
+                    setTagInput('');
+                  }
+                }}
+                className="border-border"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
             </div>
           </div>
 
