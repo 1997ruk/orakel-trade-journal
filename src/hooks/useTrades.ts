@@ -64,7 +64,8 @@ export function useTrades() {
       note_avant: trade.noteAvant,
       note_apres: trade.noteApres,
       image_url: trade.imageUrl || null,
-    });
+      tags: trade.tags || [],
+    } as any);
     if (!error) await fetchTrades();
   }, [user, fetchTrades]);
 
