@@ -36,6 +36,7 @@ export function useTrades() {
         noteAvant: t.note_avant || '',
         noteApres: t.note_apres || '',
         imageUrl: t.image_url,
+        tags: (t as any).tags || [],
       })));
     }
     setLoading(false);
