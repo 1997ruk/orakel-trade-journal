@@ -52,6 +52,7 @@ export type Database = {
           risque_pourcentage: number
           setup: string
           stop_loss: number
+          tags: string[] | null
           taille_position: number
           take_profit: number
           trade_respecte: boolean
@@ -74,6 +75,7 @@ export type Database = {
           risque_pourcentage?: number
           setup: string
           stop_loss: number
+          tags?: string[] | null
           taille_position?: number
           take_profit: number
           trade_respecte?: boolean
@@ -96,6 +98,7 @@ export type Database = {
           risque_pourcentage?: number
           setup?: string
           stop_loss?: number
+          tags?: string[] | null
           taille_position?: number
           take_profit?: number
           trade_respecte?: boolean
