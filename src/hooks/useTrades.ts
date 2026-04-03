@@ -88,6 +88,7 @@ export function useTrades() {
     if (updates.noteAvant !== undefined) dbUpdates.note_avant = updates.noteAvant;
     if (updates.noteApres !== undefined) dbUpdates.note_apres = updates.noteApres;
     if (updates.imageUrl !== undefined) dbUpdates.image_url = updates.imageUrl;
+    if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
 
     const { error } = await supabase.from('trades').update(dbUpdates).eq('id', id).eq('user_id', user.id);
     if (!error) await fetchTrades();

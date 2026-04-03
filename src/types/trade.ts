@@ -24,6 +24,7 @@ export interface Trade {
   noteAvant: string;
   noteApres: string;
   imageUrl?: string | null;
+  tags: string[];
 }
 
 export interface TradeStats {
