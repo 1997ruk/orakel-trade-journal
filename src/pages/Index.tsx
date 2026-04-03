@@ -155,8 +155,9 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-border bg-card p-5">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4">Trades Récents</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Trades Récents</h3>
               <div className="space-y-2">
                 {periodTrades.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">Aucun trade sur cette période.</p>
