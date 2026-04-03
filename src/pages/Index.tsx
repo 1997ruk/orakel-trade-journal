@@ -16,6 +16,7 @@ import {
   Activity, Award, AlertTriangle, Search, LogOut, FileDown
 } from 'lucide-react';
 import { exportJournalPdf } from '@/utils/exportPdf';
+import TradeCalendar from '@/components/TradeCalendar';
 import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
 import { SETUPS, ACTIFS } from '@/types/trade';
 
