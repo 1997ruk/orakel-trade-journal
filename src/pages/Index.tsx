@@ -84,6 +84,7 @@ const Index = () => {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <SyncIndicator />
             <Button variant="outline" onClick={() => exportJournalPdf(trades, stats)} className="gap-2 border-border text-muted-foreground hover:text-foreground">
               <FileDown className="w-4 h-4" /> Export PDF
             </Button>
