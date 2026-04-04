@@ -15,6 +15,7 @@ import {
   Plus, BarChart3, BookOpen, TrendingUp, Target, Shield,
   Activity, Award, AlertTriangle, Search, LogOut, FileDown
 } from 'lucide-react';
+import SyncIndicator from '@/components/SyncIndicator';
 import { exportJournalPdf } from '@/utils/exportPdf';
 import TradeCalendar from '@/components/TradeCalendar';
 import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
