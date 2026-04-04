@@ -1,52 +1,72 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Trade, TradeStats } from '@/types/trade';
+import {
+  getAllLocalTrades,
+  putLocalTrade,
+  deleteLocalTrade,
+  addPendingOp,
+  type LocalTrade,
+} from '@/services/indexedDB';
+import { startAutoSync, fullSync } from '@/services/syncService';
+
+function toTrade(lt: LocalTrade): Trade {
+  return {
+    id: lt.id,
+    date: lt.date,
+    actif: lt.actif,
+    setup: lt.setup,
+    direction: lt.direction as Trade['direction'],
+    prixEntree: lt.prix_entree,
+    stopLoss: lt.stop_loss,
+    takeProfit: lt.take_profit,
+    risquePourcentage: lt.risque_pourcentage,
+    taillePosition: lt.taille_position,
+    resultat: lt.resultat as Trade['resultat'],
+    rMultiple: lt.r_multiple,
+    tradeRespecte: lt.trade_respecte,
+    emotion: lt.emotion as Trade['emotion'],
+    noteAvant: lt.note_avant || '',
+    noteApres: lt.note_apres || '',
+    imageUrl: lt.image_url,
+    tags: lt.tags || [],
+  };
+}
 
 export function useTrades() {
   const { user } = useAuth();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchTrades = useCallback(async () => {
+  const loadLocal = useCallback(async () => {
     if (!user) { setTrades([]); setLoading(false); return; }
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('trades')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false });
-
-    if (!error && data) {
-      setTrades(data.map(t => ({
-        id: t.id,
-        date: t.date,
-        actif: t.actif,
-        setup: t.setup,
-        direction: t.direction as Trade['direction'],
-        prixEntree: t.prix_entree,
-        stopLoss: t.stop_loss,
-        takeProfit: t.take_profit,
-        risquePourcentage: t.risque_pourcentage,
-        taillePosition: t.taille_position,
-        resultat: t.resultat as Trade['resultat'],
-        rMultiple: t.r_multiple,
-        tradeRespecte: t.trade_respecte,
-        emotion: t.emotion as Trade['emotion'],
-        noteAvant: t.note_avant || '',
-        noteApres: t.note_apres || '',
-        imageUrl: t.image_url,
-        tags: (t as any).tags || [],
-      })));
-    }
+    const local = await getAllLocalTrades(user.id);
+    setTrades(local.map(toTrade));
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { fetchTrades(); }, [fetchTrades]);
+  // Start auto-sync and load from IndexedDB
+  useEffect(() => {
+    if (!user) { setTrades([]); setLoading(false); return; }
+
+    loadLocal();
+
+    const cleanup = startAutoSync(user.id);
+
+    // After sync completes, reload from IndexedDB
+    const interval = setInterval(loadLocal, 3000);
+
+    return () => {
+      cleanup();
+      clearInterval(interval);
+    };
+  }, [user, loadLocal]);
 
   const addTrade = useCallback(async (trade: Omit<Trade, 'id'>) => {
     if (!user) return;
-    const { error } = await supabase.from('trades').insert({
+    const id = crypto.randomUUID();
+    const localTrade: LocalTrade = {
+      id,
       user_id: user.id,
       date: trade.date,
       actif: trade.actif,
@@ -65,13 +85,29 @@ export function useTrades() {
       note_apres: trade.noteApres,
       image_url: trade.imageUrl || null,
       tags: trade.tags || [],
-    } as any);
-    if (!error) await fetchTrades();
-  }, [user, fetchTrades]);
+      sync_status: 'pending',
+    };
+
+    await putLocalTrade(localTrade);
+    await addPendingOp({
+      id: crypto.randomUUID(),
+      type: 'insert',
+      trade_id: id,
+      data: localTrade,
+      timestamp: Date.now(),
+    });
+
+    // Optimistic UI update
+    setTrades(prev => [toTrade(localTrade), ...prev]);
+
+    // Try immediate sync
+    if (navigator.onLine) fullSync(user.id).then(loadLocal);
+  }, [user, loadLocal]);
 
   const updateTrade = useCallback(async (id: string, updates: Partial<Trade>) => {
     if (!user) return;
-    const dbUpdates: Record<string, unknown> = {};
+
+    const dbUpdates: Partial<LocalTrade> = {};
     if (updates.date !== undefined) dbUpdates.date = updates.date;
     if (updates.actif !== undefined) dbUpdates.actif = updates.actif;
     if (updates.setup !== undefined) dbUpdates.setup = updates.setup;
@@ -90,15 +126,43 @@ export function useTrades() {
     if (updates.imageUrl !== undefined) dbUpdates.image_url = updates.imageUrl;
     if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
 
-    const { error } = await supabase.from('trades').update(dbUpdates).eq('id', id).eq('user_id', user.id);
-    if (!error) await fetchTrades();
-  }, [user, fetchTrades]);
+    // Update local
+    const locals = await getAllLocalTrades(user.id);
+    const existing = locals.find(t => t.id === id);
+    if (existing) {
+      const updated = { ...existing, ...dbUpdates, sync_status: 'pending' as const };
+      await putLocalTrade(updated);
+    }
+
+    await addPendingOp({
+      id: crypto.randomUUID(),
+      type: 'update',
+      trade_id: id,
+      data: dbUpdates,
+      timestamp: Date.now(),
+    });
+
+    // Optimistic
+    setTrades(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+
+    if (navigator.onLine) fullSync(user.id).then(loadLocal);
+  }, [user, loadLocal]);
 
   const deleteTrade = useCallback(async (id: string) => {
     if (!user) return;
-    const { error } = await supabase.from('trades').delete().eq('id', id).eq('user_id', user.id);
-    if (!error) await fetchTrades();
-  }, [user, fetchTrades]);
+
+    await deleteLocalTrade(id);
+    await addPendingOp({
+      id: crypto.randomUUID(),
+      type: 'delete',
+      trade_id: id,
+      timestamp: Date.now(),
+    });
+
+    setTrades(prev => prev.filter(t => t.id !== id));
+
+    if (navigator.onLine) fullSync(user.id).then(loadLocal);
+  }, [user, loadLocal]);
 
   const stats = useMemo((): TradeStats => {
     const total = trades.length;

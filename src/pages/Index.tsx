@@ -15,6 +15,7 @@ import {
   Plus, BarChart3, BookOpen, TrendingUp, Target, Shield,
   Activity, Award, AlertTriangle, Search, LogOut, FileDown
 } from 'lucide-react';
+import SyncIndicator from '@/components/SyncIndicator';
 import { exportJournalPdf } from '@/utils/exportPdf';
 import TradeCalendar from '@/components/TradeCalendar';
 import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
@@ -83,6 +84,7 @@ const Index = () => {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <SyncIndicator />
             <Button variant="outline" onClick={() => exportJournalPdf(trades, stats)} className="gap-2 border-border text-muted-foreground hover:text-foreground">
               <FileDown className="w-4 h-4" /> Export PDF
             </Button>
