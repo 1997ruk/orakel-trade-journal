@@ -51,6 +51,7 @@ const Index = () => {
 
   const periodTrades = useMemo(() => filterByPeriod(trades, dashboardPeriod), [trades, dashboardPeriod]);
   const periodStats = useMemo(() => computeStats(periodTrades), [periodTrades]);
+  const advanced = useMemo(() => computeAdvancedStats(trades), [trades]);
 
   const handleEdit = (trade: Trade) => {
     setEditTrade(trade);
