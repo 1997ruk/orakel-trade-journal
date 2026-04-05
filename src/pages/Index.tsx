@@ -13,12 +13,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus, BarChart3, BookOpen, TrendingUp, Target, Shield,
-  Activity, Award, AlertTriangle, Search, LogOut, FileDown
+  Activity, Award, AlertTriangle, Search, LogOut, FileDown,
+  Flame, Frown, Clock, CalendarDays, Zap,
 } from 'lucide-react';
 import SyncIndicator from '@/components/SyncIndicator';
 import { exportJournalPdf } from '@/utils/exportPdf';
 import TradeCalendar from '@/components/TradeCalendar';
 import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
+import { computeAdvancedStats } from '@/utils/advancedStats';
+import { DrawdownChart, PerformanceBarChart, GainVsPieChart } from '@/components/AdvancedCharts';
 import { SETUPS, ACTIFS } from '@/types/trade';
 
 const PERIOD_LABELS: Record<Period, string> = {
