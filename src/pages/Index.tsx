@@ -13,12 +13,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus, BarChart3, BookOpen, TrendingUp, Target, Shield,
-  Activity, Award, AlertTriangle, Search, LogOut, FileDown
+  Activity, Award, AlertTriangle, Search, LogOut, FileDown,
+  Flame, Frown, Clock, CalendarDays, Zap,
 } from 'lucide-react';
 import SyncIndicator from '@/components/SyncIndicator';
 import { exportJournalPdf } from '@/utils/exportPdf';
 import TradeCalendar from '@/components/TradeCalendar';
 import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats';
+import { computeAdvancedStats } from '@/utils/advancedStats';
+import { DrawdownChart, PerformanceBarChart, GainVsPieChart } from '@/components/AdvancedCharts';
 import { SETUPS, ACTIFS } from '@/types/trade';
 
 const PERIOD_LABELS: Record<Period, string> = {
@@ -48,6 +51,7 @@ const Index = () => {
 
   const periodTrades = useMemo(() => filterByPeriod(trades, dashboardPeriod), [trades, dashboardPeriod]);
   const periodStats = useMemo(() => computeStats(periodTrades), [periodTrades]);
+  const advanced = useMemo(() => computeAdvancedStats(trades), [trades]);
 
   const handleEdit = (trade: Trade) => {
     setEditTrade(trade);
@@ -211,29 +215,70 @@ const Index = () => {
 
           {/* STATS */}
           <TabsContent value="stats" className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard title="Total Trades" value={stats.totalTrades} icon={<Activity className="w-5 h-5" />} />
-              <StatCard title="Trades Gagnants" value={stats.tradesGagnants} icon={<TrendingUp className="w-5 h-5" />} trend="up" />
-              <StatCard title="Trades Perdants" value={stats.tradesPerdants} icon={<AlertTriangle className="w-5 h-5" />} trend="down" />
               <StatCard title="Winrate" value={`${stats.winrate.toFixed(1)}%`} icon={<Target className="w-5 h-5" />} trend={stats.winrate >= 50 ? 'up' : 'down'} />
-              <StatCard title="Profit Total" value={`+${stats.profitTotalR.toFixed(1)}R`} icon={<TrendingUp className="w-5 h-5" />} trend="up" />
-              <StatCard title="Perte Totale" value={`-${stats.perteTotaleR.toFixed(1)}R`} icon={<AlertTriangle className="w-5 h-5" />} trend="down" />
               <StatCard title="Profit Net" value={`${stats.profitNetR >= 0 ? '+' : ''}${stats.profitNetR.toFixed(1)}R`} icon={<Award className="w-5 h-5" />} trend={stats.profitNetR >= 0 ? 'up' : 'down'} />
-              <StatCard title="Moyenne R/Trade" value={`${stats.moyenneR.toFixed(2)}R`} icon={<BarChart3 className="w-5 h-5" />} />
-              <StatCard title="Discipline" value={`${stats.tauxDiscipline.toFixed(0)}%`} icon={<Shield className="w-5 h-5" />} trend={stats.tauxDiscipline >= 80 ? 'up' : 'down'} />
+              <StatCard title="Moyenne R" value={`${stats.moyenneR.toFixed(2)}R`} icon={<BarChart3 className="w-5 h-5" />} />
             </div>
-            <div className="grid md:grid-cols-3 gap-4">
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard title="Meilleur Trade" value={`+${advanced.bestTradeR}R`} icon={<Flame className="w-5 h-5" />} trend="up" subtitle={advanced.bestTradeDate !== '-' ? new Date(advanced.bestTradeDate).toLocaleDateString('fr-FR') : ''} />
+              <StatCard title="Pire Trade" value={`${advanced.worstTradeR}R`} icon={<Frown className="w-5 h-5" />} trend="down" subtitle={advanced.worstTradeDate !== '-' ? new Date(advanced.worstTradeDate).toLocaleDateString('fr-FR') : ''} />
+              <StatCard title="Gains Consécutifs" value={advanced.maxWinStreak} icon={<Zap className="w-5 h-5" />} trend="up" />
+              <StatCard title="Pertes Consécutives" value={advanced.maxLossStreak} icon={<AlertTriangle className="w-5 h-5" />} trend="down" />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard title="Discipline" value={`${stats.tauxDiscipline.toFixed(0)}%`} icon={<Shield className="w-5 h-5" />} trend={stats.tauxDiscipline >= 80 ? 'up' : 'down'} />
+              <StatCard title="Score Risk Mgmt" value={`${advanced.riskScore}%`} icon={<Shield className="w-5 h-5" />} trend={advanced.riskScore >= 70 ? 'up' : 'down'} />
+              <StatCard title="Risque Moyen" value={`${advanced.avgRiskPercent}%`} icon={<Target className="w-5 h-5" />} />
+              <StatCard title="Drawdown Max" value={`-${advanced.maxDrawdownR}R`} icon={<TrendingUp className="w-5 h-5" />} trend="down" />
+            </div>
+
+            <div className="rounded-lg border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-muted-foreground mb-4">Courbe de Drawdown</h3>
+              <DrawdownChart trades={trades} />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="rounded-lg border border-border bg-card p-5">
-                <p className="text-xs text-muted-foreground mb-1">Setup le plus rentable</p>
-                <p className="text-lg font-bold text-profit">{stats.setupPlusRentable}</p>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Gain vs Perte (R)</h3>
+                <GainVsPieChart trades={trades} />
+                <div className="flex justify-center gap-6 mt-2">
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-profit" /><span className="text-xs text-muted-foreground">Gains (+{stats.profitTotalR.toFixed(1)}R)</span></div>
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-loss" /><span className="text-xs text-muted-foreground">Pertes (-{stats.perteTotaleR.toFixed(1)}R)</span></div>
+                </div>
               </div>
               <div className="rounded-lg border border-border bg-card p-5">
-                <p className="text-xs text-muted-foreground mb-1">Setup le moins rentable</p>
-                <p className="text-lg font-bold text-loss">{stats.setupMoinsRentable}</p>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Performance par Setup</h3>
+                <PerformanceBarChart data={advanced.performanceBySetup} title="Setup" />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Performance par Actif</h3>
+                <PerformanceBarChart data={advanced.performanceByActif} title="Actif" />
               </div>
               <div className="rounded-lg border border-border bg-card p-5">
-                <p className="text-xs text-muted-foreground mb-1">Actif le plus rentable</p>
-                <p className="text-lg font-bold text-gold">{stats.actifPlusRentable}</p>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Performance par Émotion</h3>
+                <PerformanceBarChart data={advanced.performanceByEmotion} title="Émotion" />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Performance par Jour</h3>
+                <PerformanceBarChart data={advanced.performanceByDay} title="Jour" />
+              </div>
+              <div className="rounded-lg border border-border bg-card p-5">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Meilleur Setup / Actif</h3>
+                <div className="space-y-4 pt-4">
+                  <div><p className="text-xs text-muted-foreground mb-1">Setup le plus rentable</p><p className="text-lg font-bold text-profit">{stats.setupPlusRentable}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Setup le moins rentable</p><p className="text-lg font-bold text-loss">{stats.setupMoinsRentable}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Actif le plus rentable</p><p className="text-lg font-bold text-gold">{stats.actifPlusRentable}</p></div>
+                </div>
               </div>
             </div>
           </TabsContent>
