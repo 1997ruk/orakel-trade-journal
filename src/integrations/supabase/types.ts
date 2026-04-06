@@ -107,6 +107,36 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_goals: {
+        Row: {
+          created_at: string
+          id: string
+          r_target: number
+          trades_target: number
+          updated_at: string
+          user_id: string
+          winrate_target: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          r_target?: number
+          trades_target?: number
+          updated_at?: string
+          user_id: string
+          winrate_target?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          r_target?: number
+          trades_target?: number
+          updated_at?: string
+          user_id?: string
+          winrate_target?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
