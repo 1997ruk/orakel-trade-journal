@@ -23,6 +23,7 @@ import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats'
 import { computeAdvancedStats } from '@/utils/advancedStats';
 import { DrawdownChart, PerformanceBarChart, GainVsPieChart } from '@/components/AdvancedCharts';
 import { SETUPS, ACTIFS } from '@/types/trade';
+import DailyReminder from '@/components/DailyReminder';
 
 const PERIOD_LABELS: Record<Period, string> = {
   all: 'Tout',
@@ -103,6 +104,8 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
+        <DailyReminder trades={trades} onAddTrade={() => { setEditTrade(undefined); setFormOpen(true); }} />
+
         <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList className="bg-secondary border border-border">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-card data-[state=active]:text-gold gap-2">
