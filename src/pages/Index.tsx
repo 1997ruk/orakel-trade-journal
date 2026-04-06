@@ -23,6 +23,7 @@ import { computeStats, filterByPeriod, type Period } from '@/utils/computeStats'
 import { computeAdvancedStats } from '@/utils/advancedStats';
 import { DrawdownChart, PerformanceBarChart, GainVsPieChart } from '@/components/AdvancedCharts';
 import { SETUPS, ACTIFS } from '@/types/trade';
+import DailyReminder from '@/components/DailyReminder';
 
 const PERIOD_LABELS: Record<Period, string> = {
   all: 'Tout',
