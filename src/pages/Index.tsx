@@ -144,7 +144,8 @@ const Index = () => {
               <StatCard title="Discipline" value={`${periodStats.tauxDiscipline.toFixed(0)}%`} icon={<Shield className="w-5 h-5" />} trend={periodStats.tauxDiscipline >= 80 ? 'up' : periodStats.tauxDiscipline > 0 ? 'down' : 'neutral'} />
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-4 gap-6">
+              <div className="md:col-span-3 grid md:grid-cols-3 gap-6">
               <div className="md:col-span-2 rounded-lg border border-border bg-card p-5">
                 <h3 className="text-sm font-semibold text-muted-foreground mb-4">Courbe de Performance (R)</h3>
                 <PerformanceChart trades={periodTrades} />
