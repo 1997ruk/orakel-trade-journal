@@ -24,6 +24,7 @@ import { computeAdvancedStats } from '@/utils/advancedStats';
 import { DrawdownChart, PerformanceBarChart, GainVsPieChart } from '@/components/AdvancedCharts';
 import { SETUPS, ACTIFS } from '@/types/trade';
 import DailyReminder from '@/components/DailyReminder';
+import WeeklyGoalsPanel from '@/components/WeeklyGoals';
 
 const PERIOD_LABELS: Record<Period, string> = {
   all: 'Tout',
@@ -143,25 +144,28 @@ const Index = () => {
               <StatCard title="Discipline" value={`${periodStats.tauxDiscipline.toFixed(0)}%`} icon={<Shield className="w-5 h-5" />} trend={periodStats.tauxDiscipline >= 80 ? 'up' : periodStats.tauxDiscipline > 0 ? 'down' : 'neutral'} />
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="md:col-span-2 rounded-lg border border-border bg-card p-5">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Courbe de Performance (R)</h3>
-                <PerformanceChart trades={periodTrades} />
-              </div>
-              <div className="rounded-lg border border-border bg-card p-5">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Répartition Gains/Pertes</h3>
-                <WinrateChart trades={periodTrades} />
-                <div className="flex justify-center gap-6 mt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-profit" />
-                    <span className="text-xs text-muted-foreground">Gains ({periodStats.tradesGagnants})</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-loss" />
-                    <span className="text-xs text-muted-foreground">Pertes ({periodStats.tradesPerdants})</span>
+            <div className="grid md:grid-cols-4 gap-6">
+              <div className="md:col-span-3 grid md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 rounded-lg border border-border bg-card p-5">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-4">Courbe de Performance (R)</h3>
+                  <PerformanceChart trades={periodTrades} />
+                </div>
+                <div className="rounded-lg border border-border bg-card p-5">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-4">Répartition Gains/Pertes</h3>
+                  <WinrateChart trades={periodTrades} />
+                  <div className="flex justify-center gap-6 mt-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-profit" />
+                      <span className="text-xs text-muted-foreground">Gains ({periodStats.tradesGagnants})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-loss" />
+                      <span className="text-xs text-muted-foreground">Pertes ({periodStats.tradesPerdants})</span>
+                    </div>
                   </div>
                 </div>
               </div>
+              <WeeklyGoalsPanel trades={trades} />
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
