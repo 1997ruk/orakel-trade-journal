@@ -30,9 +30,9 @@ const WeeklyGoalsPanel = ({ trades }: Props) => {
 
   const weekStats = useMemo(() => {
     const total = weekTrades.length;
-    const wins = weekTrades.filter(t => t.resultat === 'gain').length;
+    const wins = weekTrades.filter(t => t.resultat === 'Gain').length;
     const winrate = total > 0 ? (wins / total) * 100 : 0;
-    const totalR = weekTrades.reduce((s, t) => s + t.r_multiple, 0);
+    const totalR = weekTrades.reduce((s, t) => s + t.rMultiple, 0);
     return { total, winrate, totalR };
   }, [weekTrades]);
 
