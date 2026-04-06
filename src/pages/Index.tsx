@@ -24,6 +24,7 @@ import { computeAdvancedStats } from '@/utils/advancedStats';
 import { DrawdownChart, PerformanceBarChart, GainVsPieChart } from '@/components/AdvancedCharts';
 import { SETUPS, ACTIFS } from '@/types/trade';
 import DailyReminder from '@/components/DailyReminder';
+import WeeklyGoalsPanel from '@/components/WeeklyGoals';
 
 const PERIOD_LABELS: Record<Period, string> = {
   all: 'Tout',
