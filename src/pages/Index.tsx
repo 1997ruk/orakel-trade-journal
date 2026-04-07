@@ -98,6 +98,7 @@ const Index = () => {
             <Button onClick={() => { setEditTrade(undefined); setFormOpen(true); }} className="gradient-gold text-primary-foreground font-semibold gap-2">
               <Plus className="w-4 h-4" /> Nouveau Trade
             </Button>
+            <span className="text-xs text-muted-foreground font-mono">v{APP_VERSION}</span>
             <Button variant="ghost" size="icon" onClick={signOut} className="text-muted-foreground hover:text-foreground" title="Déconnexion">
               <LogOut className="w-4 h-4" />
             </Button>
