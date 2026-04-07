@@ -25,6 +25,7 @@ import { DrawdownChart, PerformanceBarChart, GainVsPieChart } from '@/components
 import { SETUPS, ACTIFS } from '@/types/trade';
 import DailyReminder from '@/components/DailyReminder';
 import WeeklyGoalsPanel from '@/components/WeeklyGoals';
+import { APP_VERSION } from '@/constants/version';
 
 const PERIOD_LABELS: Record<Period, string> = {
   all: 'Tout',
