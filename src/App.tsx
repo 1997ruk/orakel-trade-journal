@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import InstallPWA from "./components/InstallPWA";
+import UpdatePrompt from "./components/UpdatePrompt";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
       <InstallPWA />
+      <UpdatePrompt />
     </TooltipProvider>
   </QueryClientProvider>
 );
