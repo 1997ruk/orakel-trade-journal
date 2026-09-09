@@ -142,3 +142,29 @@ export async function clearPendingOpsForTrade(tradeId: string): Promise<void> {
     store.transaction.onerror = () => { db.close(); reject(store.transaction.error); };
   });
 }
+
+// --- Weekly Goals ---
+
+export interface LocalWeeklyGoals {
+  user_id: string;
+  trades_target: number;
+  winrate_target: number;
+  r_target: number;
+  sync_status: SyncStatus;
+  updated_at: number;
+}
+
+export async function getLocalGoals(userId: string): Promise<LocalWeeklyGoals | undefined> {
+  const db = await openDB();
+  const store = tx(db, GOALS_STORE, 'readonly');
+  const g = await req<LocalWeeklyGoals | undefined>(store.get(userId));
+  db.close();
+  return g;
+}
+
+export async function putLocalGoals(goals: LocalWeeklyGoals): Promise<void> {
+  const db = await openDB();
+  const store = tx(db, GOALS_STORE, 'readwrite');
+  await req(store.put(goals));
+  db.close();
+}

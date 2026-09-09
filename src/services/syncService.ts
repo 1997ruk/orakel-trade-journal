@@ -192,3 +192,41 @@ export function startAutoSync(userId: string) {
 function stopAutoSync() {
   if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
 }
+
+// --- Weekly goals sync ---
+
+export async function syncWeeklyGoals(userId: string): Promise<void> {
+  const local = await getLocalGoals(userId);
+
+  if (!navigator.onLine) return;
+
+  if (local && local.sync_status === 'pending') {
+    const { error } = await supabase.from('weekly_goals').upsert({
+      user_id: userId,
+      trades_target: local.trades_target,
+      winrate_target: local.winrate_target,
+      r_target: local.r_target,
+    }, { onConflict: 'user_id' });
+    if (!error) {
+      await putLocalGoals({ ...local, sync_status: 'synced' });
+    }
+    return;
+  }
+
+  const { data } = await supabase
+    .from('weekly_goals')
+    .select('trades_target, winrate_target, r_target')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (data) {
+    await putLocalGoals({
+      user_id: userId,
+      trades_target: data.trades_target,
+      winrate_target: data.winrate_target,
+      r_target: data.r_target,
+      sync_status: 'synced',
+      updated_at: Date.now(),
+    });
+  }
+}
