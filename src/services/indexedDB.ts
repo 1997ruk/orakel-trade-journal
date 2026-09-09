@@ -1,7 +1,8 @@
 const DB_NAME = 'orakel-trading';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const TRADES_STORE = 'trades';
 const PENDING_OPS_STORE = 'pending_ops';
+const GOALS_STORE = 'weekly_goals';
 
 export type SyncStatus = 'synced' | 'pending' | 'error';
 
@@ -49,6 +50,9 @@ function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(PENDING_OPS_STORE)) {
         const ops = db.createObjectStore(PENDING_OPS_STORE, { keyPath: 'id' });
         ops.createIndex('trade_id', 'trade_id', { unique: false });
+      }
+      if (!db.objectStoreNames.contains(GOALS_STORE)) {
+        db.createObjectStore(GOALS_STORE, { keyPath: 'user_id' });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -137,4 +141,30 @@ export async function clearPendingOpsForTrade(tradeId: string): Promise<void> {
     store.transaction.oncomplete = () => { db.close(); resolve(); };
     store.transaction.onerror = () => { db.close(); reject(store.transaction.error); };
   });
+}
+
+// --- Weekly Goals ---
+
+export interface LocalWeeklyGoals {
+  user_id: string;
+  trades_target: number;
+  winrate_target: number;
+  r_target: number;
+  sync_status: SyncStatus;
+  updated_at: number;
+}
+
+export async function getLocalGoals(userId: string): Promise<LocalWeeklyGoals | undefined> {
+  const db = await openDB();
+  const store = tx(db, GOALS_STORE, 'readonly');
+  const g = await req<LocalWeeklyGoals | undefined>(store.get(userId));
+  db.close();
+  return g;
+}
+
+export async function putLocalGoals(goals: LocalWeeklyGoals): Promise<void> {
+  const db = await openDB();
+  const store = tx(db, GOALS_STORE, 'readwrite');
+  await req(store.put(goals));
+  db.close();
 }
