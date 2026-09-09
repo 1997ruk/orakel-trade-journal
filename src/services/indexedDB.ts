@@ -1,7 +1,8 @@
 const DB_NAME = 'orakel-trading';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const TRADES_STORE = 'trades';
 const PENDING_OPS_STORE = 'pending_ops';
+const GOALS_STORE = 'weekly_goals';
 
 export type SyncStatus = 'synced' | 'pending' | 'error';
 
