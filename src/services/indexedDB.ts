@@ -51,6 +51,9 @@ function openDB(): Promise<IDBDatabase> {
         const ops = db.createObjectStore(PENDING_OPS_STORE, { keyPath: 'id' });
         ops.createIndex('trade_id', 'trade_id', { unique: false });
       }
+      if (!db.objectStoreNames.contains(GOALS_STORE)) {
+        db.createObjectStore(GOALS_STORE, { keyPath: 'user_id' });
+      }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
