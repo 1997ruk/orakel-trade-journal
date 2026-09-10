@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import TradesInfo from "./pages/TradesInfo";
+import StatsInfo from "./pages/StatsInfo";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -20,14 +23,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
     </div>
   );
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
 
 const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };
 
@@ -38,9 +41,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/trades" element={<TradesInfo />} />
+          <Route path="/stats" element={<StatsInfo />} />
+          <Route path="/login" element={<AuthRoute><Auth /></AuthRoute>} />
           <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
