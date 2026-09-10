@@ -110,6 +110,9 @@ const Auth = () => {
             </button>
           </div>
         </form>
+        <p className="text-center text-sm">
+          <Link to="/" className="text-muted-foreground hover:text-foreground">← Retour à l'accueil</Link>
+        </p>
       </div>
     </div>
   );
