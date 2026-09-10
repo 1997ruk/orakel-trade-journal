@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +45,11 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Helmet>
+        <title>Connexion — Orakel Trading Journal</title>
+        <meta name="description" content="Connectez-vous à Orakel Trading Journal pour accéder à votre journal de trades, vos statistiques et vos objectifs hebdomadaires." />
+        <link rel="canonical" href="https://orakel-trade-journal.lovable.app/login" />
+      </Helmet>
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <div className="w-16 h-16 rounded-2xl gradient-gold flex items-center justify-center mx-auto mb-4">
