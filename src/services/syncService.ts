@@ -6,6 +6,8 @@ import {
   deleteLocalTrade,
   putLocalTrade,
   getAllLocalTrades,
+  getLocalGoals,
+  putLocalGoals,
   type LocalTrade,
   type PendingOperation,
 } from './indexedDB';
@@ -159,6 +161,7 @@ export async function fullSync(userId: string) {
   try {
     await syncPendingOps(userId);
     await pullFromSupabase(userId);
+    await syncWeeklyGoals(userId);
     setState('synced');
   } catch {
     setState('error');
