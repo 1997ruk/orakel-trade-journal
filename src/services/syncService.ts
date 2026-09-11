@@ -6,6 +6,8 @@ import {
   deleteLocalTrade,
   putLocalTrade,
   getAllLocalTrades,
+  getLocalGoals,
+  putLocalGoals,
   type LocalTrade,
   type PendingOperation,
 } from './indexedDB';
